@@ -15,10 +15,13 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-}
+    implementation("org.slf4j:slf4j-api:2.0.2")
+    implementation("org.apache.logging.log4j:log4j-core:2.19.0")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.19.0")
+    implementation("io.github.microutils:kotlin-logging:3.0.0")
 
-tasks.test {
-    useJUnitPlatform()
+    implementation("org.kohsuke:github-api:1.308")
+
 }
 
 /*tasks.withType<KotlinCompile> {
@@ -39,4 +42,10 @@ indra {
 
 tasks.withType<Jar> {
     indraGit.applyVcsInformationToManifest(manifest)
+}
+
+application {
+    mainClass.set("zinced.main.MainKt")
+    executableDir = ""
+    applicationDefaultJvmArgs = listOf("-Dlog4j.skipJansi=false")
 }
