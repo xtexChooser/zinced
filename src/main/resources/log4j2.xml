@@ -18,9 +18,9 @@
         </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
-        <Root level="all">
+        <Root level="INFO">
             <AppenderRef ref="Console" />
-            <AppenderRef ref="File" level="INFO"/>
+            <AppenderRef ref="File" />
         </Root>
     </Loggers>
 </Configuration>

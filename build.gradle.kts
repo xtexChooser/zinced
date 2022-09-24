@@ -1,5 +1,8 @@
+import de.undercouch.gradle.tasks.download.Download
+
 plugins {
     kotlin("jvm") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
     id("application")
     id("net.kyori.indra") version "2.2.0"
     id("net.kyori.indra.licenser.spotless") version "2.2.0"
@@ -15,12 +18,24 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+
+    // Logging
+    implementation("io.github.microutils:kotlin-logging:3.0.0")
     implementation("org.slf4j:slf4j-api:2.0.2")
     implementation("org.apache.logging.log4j:log4j-core:2.19.0")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.19.0")
-    implementation("io.github.microutils:kotlin-logging:3.0.0")
 
-    implementation("org.kohsuke:github-api:1.308")
+    // Config
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.4.0")
+    implementation("com.typesafe:config:1.4.2")
+
+    // Gitea
+    implementation("com.github.zeripath:java-gitea-api:1.16.8")
+    implementation("io.javalin:javalin:4.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.10")
 
 }
 
@@ -48,4 +63,8 @@ application {
     mainClass.set("zinced.main.MainKt")
     executableDir = ""
     applicationDefaultJvmArgs = listOf("-Dlog4j.skipJansi=false")
+}
+
+tasks.getByName<JavaExec>("run") {
+    workingDir = file("run")
 }
