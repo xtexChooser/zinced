@@ -55,7 +55,7 @@ object Styles : StyleSheet() {
         (type("details") + attr("open")) style {
             padding(0.5.em)
         }
-        (type("details") + type("summary")) style {
+        desc(type("details") + attr("open"), type("summary")) style {
             property("border-bottom", "0.1em solid $Primary")
             marginBottom(0.5.em)
         }
@@ -64,7 +64,7 @@ object Styles : StyleSheet() {
             fontWeight("bold")
         }
         (type("dt") + after) style {
-            property("content", "：")
+            property("content", "\"：\"")
         }
 
         type("code") style {
