@@ -1,70 +1,48 @@
-import de.undercouch.gradle.tasks.download.Download
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
+/*buildscript {
+    dependencies {
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.18.3")
+    }
+}
+apply(plugin: "kotlinx-atomicfu")
+*/
 
 plugins {
-    kotlin("jvm") version "1.7.10"
-    kotlin("plugin.serialization") version "1.7.10"
-    id("application")
-    id("net.kyori.indra") version "2.2.0"
+    kotlin("multiplatform") version "1.7.10" apply false
+    kotlin("jvm") version "1.7.10" apply false
+    kotlin("plugin.serialization") version "1.7.10" apply false
+    id("org.jetbrains.compose") version "1.2.0-beta02-dev798" apply false
     id("net.kyori.indra.licenser.spotless") version "2.2.0"
     id("net.kyori.indra.git") version "2.2.0"
 }
 
-group = "zinced"
-version = "1.0-SNAPSHOT"
+allprojects {
+    group = "zinced"
+    version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+    apply(plugin = "net.kyori.indra.licenser.spotless")
+    apply(plugin = "net.kyori.indra.git")
 
-dependencies {
-    testImplementation(kotlin("test"))
-
-    // Logging
-    implementation("io.github.microutils:kotlin-logging:3.0.0")
-    implementation("org.slf4j:slf4j-api:2.0.2")
-    implementation("org.apache.logging.log4j:log4j-core:2.19.0")
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.19.0")
-
-    // Config
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.4.0")
-    implementation("com.typesafe:config:1.4.2")
-
-    // Gitea
-    implementation("com.github.zeripath:java-gitea-api:1.16.8")
-    implementation("io.javalin:javalin:4.6.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-
-    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.10")
-
-}
-
-/*tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}*/
-
-indra {
-    javaVersions {
-        target(17)
+    repositories {
+        mavenCentral()
     }
-    apache2License()
-    github("xtexChooser", "zinced") {
-        ci(true)
-        issues(true)
-        scm(true)
+
+    afterEvaluate {
+        tasks.withType<Jar> {
+            indraGit.applyVcsInformationToManifest(manifest)
+        }
+        tasks.withType<KotlinJvmCompile> {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+        tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile> {
+            kotlinOptions {
+                moduleKind = "umd"
+                sourceMap = true
+                metaInfo = true
+            }
+        }
     }
-}
-
-tasks.withType<Jar> {
-    indraGit.applyVcsInformationToManifest(manifest)
-}
-
-application {
-    mainClass.set("zinced.main.MainKt")
-    executableDir = ""
-    applicationDefaultJvmArgs = listOf("-Dlog4j.skipJansi=false")
-}
-
-tasks.getByName<JavaExec>("run") {
-    workingDir = file("run")
 }
