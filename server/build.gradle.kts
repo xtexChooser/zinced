@@ -22,6 +22,7 @@ dependencies {
     implementation("io.javalin:javalin:4.6.4")
 
     // MediaWiki
+    implementation("org.sweble.wikitext:swc-parser-lazy:3.1.9")
 }
 
 application {

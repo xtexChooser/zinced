@@ -16,6 +16,7 @@
 package zinced.server.mw.model
 
 import kotlinx.serialization.Serializable
+import zinced.server.mw.data.MwQueryResponse
 
 @Serializable
 data class PageMetadata(
@@ -26,5 +27,26 @@ data class PageMetadata(
     val lang: Map<LanguageID, String>,
     val anonymousContributors: Int,
     val contributors: Set<Int>,
+    val categories: Set<Pair<Namespace, PageName>>,
+    val templates: Set<Pair<Namespace, PageName>>,
     val summary: String,
-)
+) {
+
+    companion object {
+
+        fun fromQueryResponse(entry: MwQueryResponse.Query.PagesEntry) = PageMetadata(
+            id = PageID(entry.pageId),
+            title = PageName(entry.title),
+            ns = Namespace(entry.namespace),
+            displayTitle = entry.displayTitle!!,
+            lang = entry.langLinks.associate { LanguageID(it.lang) to it.title },
+            anonymousContributors = entry.anonymousContributors,
+            contributors = entry.contributors.map { it.userId }.toSet(),
+            categories = entry.categories.map { Namespace(it.ns) to PageName(it.title) }.toSet(),
+            templates = entry.templates.map { Namespace(it.ns) to PageName(it.title) }.toSet(),
+            summary = entry.summary!!,
+        )
+
+    }
+
+}

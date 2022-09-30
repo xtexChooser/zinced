@@ -8,7 +8,7 @@ object ZincedServer {
     val userAgent = "Zinced/$version"
 
     private fun getDevVersion() = try {
-        "DEV-${InetAddress.getLocalHost().canonicalHostName}"
+        "DEV-${InetAddress.getLocalHost().hostName}"
     } catch(e: Exception) {
         "DEV"
     }

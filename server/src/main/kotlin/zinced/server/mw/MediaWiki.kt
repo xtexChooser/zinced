@@ -33,7 +33,10 @@ import zinced.server.ZincedServer
 import zinced.server.config.Config
 import zinced.server.mw.data.MwContinue
 import zinced.server.mw.data.MwQueryResponse
-import zinced.server.mw.model.*
+import zinced.server.mw.model.LanguageID
+import zinced.server.mw.model.PageID
+import zinced.server.mw.model.PageMetadata
+import zinced.server.mw.model.PageName
 import zinced.server.util.merge
 
 object MediaWiki {
@@ -146,8 +149,6 @@ object MediaWiki {
     }
 
     suspend fun queryPageMetadata(lang: LanguageID = MediaWiki.lang, pageID: Set<PageID>): Flow<PageMetadata> {
-        println("querying metadata")
-        val progress = atomic(0)
         return channelFlow {
             pageID.chunked(50).forEach { batchPages ->
                 launch {
@@ -160,19 +161,9 @@ object MediaWiki {
                             "pageids" to batchPages.map { it.id }.joinToString(separator = "|")
                         ),
                         continueProvider = MwQueryResponse::`continue`,
-                    ).query.pages!!.values.map { entry ->
-                        PageMetadata(
-                            id = PageID(entry.pageId),
-                            title = PageName(entry.title),
-                            ns = Namespace(entry.namespace),
-                            displayTitle = entry.displayTitle!!,
-                            lang = entry.langLinks.associate { LanguageID(it.lang) to it.title },
-                            anonymousContributors = entry.anonymousContributors,
-                            contributors = entry.contributors.map { it.userId }.toSet(),
-                            summary = entry.summary!!,
-                        )
-                    }.forEach { send(it) }
-                    println("done ${progress.incrementAndGet()}/${pageID.size / 50 + 1}")
+                    ).query.pages!!.values
+                        .map { PageMetadata.fromQueryResponse(it) }
+                        .forEach { send(it) }
                 }
             }
         }

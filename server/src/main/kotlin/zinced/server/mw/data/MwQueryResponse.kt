@@ -55,6 +55,8 @@ data class MwQueryResponse(
             val anonymousContributors: Int = 0,
             @SerialName("contributors")
             val contributors: List<ContributorsEntry> = emptyList(),
+            val categories: List<CategoriesEntry> = emptyList(),
+            val templates: List<TemplatesEntry> = emptyList(),
             @SerialName("extract")
             val summary: String? = null,
         ) {
@@ -71,6 +73,17 @@ data class MwQueryResponse(
                 @SerialName("userid")
                 val userId: Int,
                 val name: String,
+            )
+
+            @Serializable
+            data class CategoriesEntry(
+                val ns: Int,
+                val title: String,
+            )
+            @Serializable
+            data class TemplatesEntry(
+                val ns: Int,
+                val title: String,
             )
 
         }

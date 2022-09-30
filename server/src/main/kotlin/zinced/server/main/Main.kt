@@ -15,9 +15,7 @@
  */
 package zinced.server.main
 
-import kotlinx.coroutines.runBlocking
 import zinced.server.web.WebServer
-import zinced.server.mw.MediaWiki
 
 fun main(args: Array<String>) {
     WebServer.start()
