@@ -15,21 +15,8 @@
  */
 package zinced.server.main
 
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import zinced.server.mw.MediaWiki
-import zinced.server.mw.model.toPageID
-import zinced.server.mw.model.toPageName
 import zinced.server.web.WebServer
 
 fun main(args: Array<String>) {
     WebServer.start()
-    runBlocking {
-        MediaWiki.queryPageMetadata(id = setOf(6744.toPageID())).collectLatest {
-            println(it)
-        }
-        println(Json.encodeToString(MediaWiki.getPageContent(id = MediaWiki.getPageID(title = "密度函数".toPageName())).sections))
-    }
 }

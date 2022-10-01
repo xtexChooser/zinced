@@ -47,3 +47,5 @@ value class PageName(val name: String) {
 
 inline fun String.toPageName() = PageName(this)
 inline fun CharSequence.toPageName() = PageName(toString())
+
+fun String.lowercaseFirstChar() = replaceFirstChar { it.lowercaseChar() }

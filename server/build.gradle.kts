@@ -23,6 +23,7 @@ dependencies {
 
     // MediaWiki
     implementation("org.sweble.wikitext:swc-parser-lazy:3.1.9")
+    //implementation("io.github.java-diff-utils:java-diff-utils:4.12")
 }
 
 application {

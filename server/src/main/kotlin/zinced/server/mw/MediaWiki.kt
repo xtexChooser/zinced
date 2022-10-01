@@ -33,6 +33,7 @@ import zinced.server.mw.data.MwContinue
 import zinced.server.mw.data.MwParseResponse
 import zinced.server.mw.data.MwQueryResponse
 import zinced.server.mw.model.*
+import zinced.server.mw.wikitext.Wikitext
 import zinced.server.util.merge
 
 object MediaWiki {
@@ -230,5 +231,8 @@ object MediaWiki {
                 "pageids" to id.id.toString()
             ),
         ).query.pages!!.values.single().title.toPageName()
+
+    suspend fun parsePage(lang: LanguageID = MediaWiki.lang, id: PageID, title: PageName? = null) =
+        Wikitext.parse(title ?: id.toName(), getPageContent(lang, id).wikitext)
 
 }
