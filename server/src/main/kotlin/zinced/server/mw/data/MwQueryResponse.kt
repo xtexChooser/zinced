@@ -27,66 +27,64 @@ data class MwQueryResponse(
     @Serializable
     data class Query(
         @SerialName("allpages")
-        val allPages: List<AllPagesEntry>? = null,
-        val pages: Map<String, PagesEntry>? = null,
+        val allPages: List<AllPages>? = null,
+        val pages: Map<String, Pages>? = null,
+    )
+
+    @Serializable
+    data class AllPages(
+        @SerialName("pageid")
+        val pageId: Int,
+        @SerialName("ns")
+        val namespace: Int,
+        val title: String,
+    )
+
+    @Serializable
+    data class Pages(
+        @SerialName("pageid")
+        val pageID: Int,
+        @SerialName("ns")
+        val namespace: Int,
+        val title: String,
+        @SerialName("displaytitle")
+        val displayTitle: String? = null,
+        @SerialName("langlinks")
+        val langLinks: List<LangLinksEntry> = emptyList(),
+        @SerialName("anoncontributors")
+        val anonymousContributors: Int = 0,
+        @SerialName("contributors")
+        val contributors: List<ContributorsEntry> = emptyList(),
+        val categories: List<CategoriesEntry> = emptyList(),
+        val templates: List<TemplatesEntry> = emptyList(),
+        @SerialName("extract")
+        val summary: String? = null,
     ) {
 
         @Serializable
-        data class AllPagesEntry(
-            @SerialName("pageid")
-            val pageId: Int,
-            @SerialName("ns")
-            val namespace: Int,
+        data class LangLinksEntry(
+            val lang: String,
+            @SerialName("*")
             val title: String,
         )
 
         @Serializable
-        data class PagesEntry(
-            @SerialName("pageid")
-            val pageId: Int,
-            @SerialName("ns")
-            val namespace: Int,
+        data class ContributorsEntry(
+            @SerialName("userid")
+            val userId: Int,
+            val name: String,
+        )
+
+        @Serializable
+        data class CategoriesEntry(
+            val ns: Int,
             val title: String,
-            @SerialName("displaytitle")
-            val displayTitle: String? = null,
-            @SerialName("langlinks")
-            val langLinks: List<LangLinksEntry> = emptyList(),
-            @SerialName("anoncontributors")
-            val anonymousContributors: Int = 0,
-            @SerialName("contributors")
-            val contributors: List<ContributorsEntry> = emptyList(),
-            val categories: List<CategoriesEntry> = emptyList(),
-            val templates: List<TemplatesEntry> = emptyList(),
-            @SerialName("extract")
-            val summary: String? = null,
-        ) {
-
-            @Serializable
-            data class LangLinksEntry(
-                val lang: String,
-                @SerialName("*")
-                val title: String,
-            )
-
-            @Serializable
-            data class ContributorsEntry(
-                @SerialName("userid")
-                val userId: Int,
-                val name: String,
-            )
-
-            @Serializable
-            data class CategoriesEntry(
-                val ns: Int,
-                val title: String,
-            )
-            @Serializable
-            data class TemplatesEntry(
-                val ns: Int,
-                val title: String,
-            )
-
-        }
+        )
+        @Serializable
+        data class TemplatesEntry(
+            val ns: Int,
+            val title: String,
+        )
 
     }
 

@@ -17,9 +17,7 @@
 
 package zinced.server.mw
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
@@ -32,11 +30,9 @@ import okhttp3.executeAsync
 import zinced.server.ZincedServer
 import zinced.server.config.Config
 import zinced.server.mw.data.MwContinue
+import zinced.server.mw.data.MwParseResponse
 import zinced.server.mw.data.MwQueryResponse
-import zinced.server.mw.model.LanguageID
-import zinced.server.mw.model.PageID
-import zinced.server.mw.model.PageMetadata
-import zinced.server.mw.model.PageName
+import zinced.server.mw.model.*
 import zinced.server.util.merge
 
 object MediaWiki {
@@ -46,7 +42,7 @@ object MediaWiki {
     val httpClient = OkHttpClient.Builder()
         .build()
     val json = Json { ignoreUnknownKeys = true }
-    val lang = LanguageID(config.lang)
+    val lang = config.lang.toLanguage()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val apiParallelismLimit = Dispatchers.Default.limitedParallelism(10)
@@ -131,8 +127,8 @@ object MediaWiki {
         }
     }
 
-    suspend fun getAllPages(lang: LanguageID = MediaWiki.lang): Flow<Pair<PageID, PageName>> {
-        return callApiContinued(
+    suspend fun getAllPages(lang: LanguageID = MediaWiki.lang) =
+        callApiContinued(
             lang = lang,
             action = "query",
             params = mapOf(
@@ -143,14 +139,13 @@ object MediaWiki {
             continueProvider = MwQueryResponse::`continue`,
         ).flatMapConcat { result ->
             flow {
-                result.query.allPages!!.forEach { emit(PageID(it.pageId) to PageName(it.title)) }
+                result.query.allPages!!.forEach { emit(it.pageId.toPageID() to it.title.toPageName()) }
             }
         }
-    }
 
-    suspend fun queryPageMetadata(lang: LanguageID = MediaWiki.lang, pageID: Set<PageID>): Flow<PageMetadata> {
-        return channelFlow {
-            pageID.chunked(50).forEach { batchPages ->
+    suspend fun queryPageMetadata(lang: LanguageID = MediaWiki.lang, id: Collection<PageID>) =
+        channelFlow {
+            id.chunked(50).forEach { batchPages ->
                 launch {
                     callApiMerged(
                         lang = lang,
@@ -162,11 +157,78 @@ object MediaWiki {
                         ),
                         continueProvider = MwQueryResponse::`continue`,
                     ).query.pages!!.values
-                        .map { PageMetadata.fromQueryResponse(it) }
+                        .map { PageMetadata.from(it) }
                         .forEach { send(it) }
                 }
             }
         }
+
+    suspend fun getPageContent(lang: LanguageID = MediaWiki.lang, id: PageID) =
+        PageContent.from(
+            callApi<MwParseResponse>(
+                lang = lang,
+                action = "parse",
+                params = mapOf(
+                    "prop" to "links|externallinks|sections|parsewarnings|wikitext",
+                    "pageid" to id.id.toString(),
+                ),
+            ).parse
+        )
+
+    suspend fun getPageID(lang: LanguageID = MediaWiki.lang, titles: Collection<PageName>) = buildMap {
+        coroutineScope {
+            titles.chunked(50).forEach { batchPages ->
+                launch {
+                    callApiContinued(
+                        lang = lang,
+                        action = "query",
+                        params = mapOf(
+                            "titles" to batchPages.joinToString(separator = "|") { it.name }
+                        ),
+                        continueProvider = MwQueryResponse::`continue`,
+                    ).collect { result ->
+                        putAll(result.query.pages!!.values.associate { it.title.toPageName() to it.pageID.toPageID() })
+                    }
+                }
+            }
+        }
     }
+
+    suspend fun getPageID(lang: LanguageID = MediaWiki.lang, title: PageName) =
+        callApi<MwQueryResponse>(
+            lang = lang,
+            action = "query",
+            params = mapOf(
+                "titles" to title.name
+            ),
+        ).query.pages!!.values.single().pageID.toPageID()
+
+    suspend fun getPageName(lang: LanguageID = MediaWiki.lang, pageID: Collection<PageID>) = buildMap {
+        coroutineScope {
+            pageID.chunked(50).forEach { batchPages ->
+                launch {
+                    callApiContinued(
+                        lang = lang,
+                        action = "query",
+                        params = mapOf(
+                            "pageids" to batchPages.map { it.id }.joinToString(separator = "|")
+                        ),
+                        continueProvider = MwQueryResponse::`continue`,
+                    ).collect { result ->
+                        putAll(result.query.pages!!.values.associate { it.pageID.toPageID() to it.title.toPageName() })
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun getPageName(lang: LanguageID = MediaWiki.lang, id: PageID) =
+        callApi<MwQueryResponse>(
+            lang = lang,
+            action = "query",
+            params = mapOf(
+                "pageids" to id.id.toString()
+            ),
+        ).query.pages!!.values.single().title.toPageName()
 
 }

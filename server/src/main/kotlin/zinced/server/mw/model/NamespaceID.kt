@@ -13,10 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("NOTHING_TO_INLINE")
+
 package zinced.server.mw.model
 
 import kotlinx.serialization.Serializable
 
 @JvmInline
 @Serializable
-value class Namespace(val id: Int)
+value class NamespaceID(val id: Int) {
+
+    override fun toString() = id.toString()
+
+}
+
+inline fun Number.toNS() = NamespaceID(toInt())

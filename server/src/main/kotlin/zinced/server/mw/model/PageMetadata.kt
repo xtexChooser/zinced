@@ -22,28 +22,28 @@ import zinced.server.mw.data.MwQueryResponse
 data class PageMetadata(
     val id: PageID,
     val title: PageName,
-    val ns: Namespace,
+    val ns: NamespaceID,
     val displayTitle: String,
-    val lang: Map<LanguageID, String>,
+    val lang: Map<LanguageID, PageName>,
     val anonymousContributors: Int,
     val contributors: Set<Int>,
-    val categories: Set<Pair<Namespace, PageName>>,
-    val templates: Set<Pair<Namespace, PageName>>,
+    val categories: Set<Pair<NamespaceID, PageName>>,
+    val templates: Set<Pair<NamespaceID, PageName>>,
     val summary: String,
 ) {
 
     companion object {
 
-        fun fromQueryResponse(entry: MwQueryResponse.Query.PagesEntry) = PageMetadata(
-            id = PageID(entry.pageId),
-            title = PageName(entry.title),
-            ns = Namespace(entry.namespace),
+        fun from(entry: MwQueryResponse.Pages) = PageMetadata(
+            id = entry.pageID.toPageID(),
+            title = entry.title.toPageName(),
+            ns = entry.namespace.toNS(),
             displayTitle = entry.displayTitle!!,
-            lang = entry.langLinks.associate { LanguageID(it.lang) to it.title },
+            lang = entry.langLinks.associate { it.lang.toLanguage() to it.title.toPageName() },
             anonymousContributors = entry.anonymousContributors,
             contributors = entry.contributors.map { it.userId }.toSet(),
-            categories = entry.categories.map { Namespace(it.ns) to PageName(it.title) }.toSet(),
-            templates = entry.templates.map { Namespace(it.ns) to PageName(it.title) }.toSet(),
+            categories = entry.categories.map { it.ns.toNS() to it.title.toPageName() }.toSet(),
+            templates = entry.templates.map { it.ns.toNS() to it.title.toPageName() }.toSet(),
             summary = entry.summary!!,
         )
 
