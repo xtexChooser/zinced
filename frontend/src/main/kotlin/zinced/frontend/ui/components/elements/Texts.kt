@@ -3,9 +3,7 @@
 package zinced.frontend.ui.components.elements
 
 import androidx.compose.runtime.Composable
-import org.jetbrains.compose.web.dom.AttrBuilderContext
-import org.jetbrains.compose.web.dom.Button
-import org.jetbrains.compose.web.dom.Pre
+import org.jetbrains.compose.web.dom.*
 import org.jetbrains.compose.web.dom.Text
 import org.w3c.dom.*
 
@@ -40,4 +38,8 @@ inline fun Button(text: String, noinline attrs: AttrBuilderContext<HTMLButtonEle
 @Composable
 inline fun Pre(text: String, noinline attrs: AttrBuilderContext<HTMLPreElement>? = null) =
     Pre(attrs) { Text(text) }
+
+@Composable
+inline fun Li(text: String, noinline attrs: AttrBuilderContext<HTMLLIElement>? = null) =
+    Li(attrs) { Text(text) }
 
