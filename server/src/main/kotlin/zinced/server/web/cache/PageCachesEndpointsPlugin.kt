@@ -7,8 +7,8 @@ import io.javalin.http.BadRequestResponse
 import io.javalin.http.HttpCode
 import io.javalin.http.NotFoundResponse
 import kotlinx.coroutines.runBlocking
-import zinced.common.cache.PageCacheInfo
 import zinced.common.toPageID
+import zinced.server.database.Database
 import zinced.server.database.cache.PageCaches
 import zinced.server.util.withType
 import kotlin.math.min
@@ -27,10 +27,12 @@ object PageCachesEndpointsPlugin : Plugin {
                         (ctx.queryParam("page") ?: "0").toIntOrNull()
                             ?: throw BadRequestResponse("Invalid page number")
                     runBlocking {
-                        ctx.json(
-                            PageCaches.getAll(page * count, count)
-                                .map { it.toInfo(false) }.withType()
-                        )
+                        Database.transaction {
+                            ctx.json(
+                                PageCaches.getAll(page * count, count)
+                                    .map { it.toInfo(false) }.withType()
+                            )
+                        }
                     }
                 }
                 delete { ctx ->
@@ -47,7 +49,9 @@ object PageCachesEndpointsPlugin : Plugin {
                 path("outdated") {
                     get { ctx ->
                         runBlocking {
-                            ctx.json(PageCaches.getOutdated().map { it.toInfo(false) }.withType())
+                            Database.transaction {
+                                ctx.json(PageCaches.getOutdated().map { it.toInfo(false) }.withType())
+                            }
                         }
                     }
                     delete { ctx ->
@@ -64,10 +68,12 @@ object PageCachesEndpointsPlugin : Plugin {
                         val queryOnly = (ctx.queryParam("queryOnly") ?: "false").toBooleanStrictOrNull()
                             ?: throw BadRequestResponse("Invalid queryOnly value")
                         runBlocking {
-                            val result =
-                                (if (queryOnly) PageCaches.find(page)
-                                else PageCaches.tryGet(page)) ?: throw NotFoundResponse()
-                            ctx.json(result.toInfo(true))
+                            Database.transaction {
+                                val result =
+                                    (if (queryOnly) PageCaches.find(page)
+                                    else PageCaches.tryGet(page)) ?: throw NotFoundResponse()
+                                ctx.json(result.toInfo(true))
+                            }
                         }
                     }
                     post { ctx ->

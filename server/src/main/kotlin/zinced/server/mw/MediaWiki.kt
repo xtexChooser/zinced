@@ -31,7 +31,9 @@ import okhttp3.Request
 import okhttp3.executeAsync
 import zinced.common.*
 import zinced.server.ZincedServer
+import zinced.server.checker.PageChecker
 import zinced.server.config.Config
+import zinced.server.database.cache.PageCaches
 import zinced.server.mw.data.MwContinue
 import zinced.server.mw.data.MwParseResponse
 import zinced.server.mw.data.MwQueryResponse
@@ -249,11 +251,18 @@ object MediaWiki {
 
     @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
     suspend fun walk() {
-        val dispatcher = (currentCoroutineContext()[CoroutineDispatcher] ?: Dispatchers.Default)
-            .limitedParallelism(15)
+        val dispatcher = CoroutineScope(
+            (currentCoroutineContext()[CoroutineDispatcher] ?: Dispatchers.Default)
+                .limitedParallelism(15)
+        )
         getAllPages().collect { (id, name) ->
-            logger.info("Populating cache for $id")
-            logger.info("Checking $id")
+            dispatcher.launch {
+                logger.info("Populating cache for $id")
+                PageCaches.cache(id)
+                logger.info("Checking $id")
+                PageChecker.check(id)
+                logger.info("Checked $id")
+            }
         }
     }
 

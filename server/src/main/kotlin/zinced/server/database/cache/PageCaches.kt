@@ -1,7 +1,5 @@
 package zinced.server.database.cache
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import zinced.common.PageID
@@ -13,29 +11,23 @@ import kotlin.time.ExperimentalTime
 object PageCaches {
 
     suspend fun count() =
-        withContext(Dispatchers.IO) {
-            Database.transaction {
-                createNamedQuery("countAllPageCache")
-                    .singleResult as Long
-            }
+        Database.transaction {
+            createNamedQuery("countAllPageCache")
+                .singleResult as Long
         }
 
     @Suppress("UNCHECKED_CAST")
     suspend fun getAll(first: Int, count: Int) =
-        withContext(Dispatchers.IO) {
-            Database.transaction {
-                createNamedQuery("getAllPageCache")
-                    .setFirstResult(first)
-                    .setMaxResults(count)
-                    .resultList!! as List<PageCache>
-            }
+        Database.transaction {
+            createNamedQuery("getAllPageCache")
+                .setFirstResult(first)
+                .setMaxResults(count)
+                .resultList!! as List<PageCache>
         }
 
     suspend fun find(id: PageID): PageCache? =
-        withContext(Dispatchers.IO) {
-            Database.transaction {
-                find(PageCache::class.java, id.id)
-            }
+        Database.transaction {
+            find(PageCache::class.java, id.id)
         }
 
     suspend fun get(id: PageID) = tryGet(id) ?: error("Page $id not found")
@@ -45,10 +37,8 @@ object PageCaches {
     suspend fun cache(id: PageID): PageCache? {
         val current = find(id)
         if (current != null) {
-            withContext(Dispatchers.IO) {
-                Database.transaction {
-                    remove(current)
-                }
+            Database.transaction {
+                remove(current)
             }
         }
         return createCache(id)
@@ -63,49 +53,40 @@ object PageCaches {
             content = content.wikitext.takeIf { it.length <= 8 * 1024 }
         )
 
-        withContext(Dispatchers.IO) {
-            Database.transaction {
-                persist(cache)
-            }
+        Database.transaction {
+            persist(cache)
         }
         return cache
     }
 
     suspend fun delete(id: PageID) {
-        withContext(Dispatchers.IO) {
-            Database.transaction {
-                createNamedQuery("deletePageCache")
-                    .setParameter("id", id.id)
-                    .executeUpdate()
-            }
+        Database.transaction {
+            createNamedQuery("deletePageCache")
+                .setParameter("id", id.id)
+                .executeUpdate()
         }
     }
 
     suspend fun clear() {
-        withContext(Dispatchers.IO) {
-            Database.transaction {
-                createNamedQuery("clearPageCaches")
-                    .executeUpdate()
-            }
+        Database.transaction {
+            createNamedQuery("clearPageCaches")
+                .executeUpdate()
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun getBefore(timestamp: Instant) = withContext(Dispatchers.IO) {
+    suspend fun getBefore(timestamp: Instant) =
         Database.transaction {
             createNamedQuery("getPageCachesBefore")
                 .setParameter("time", timestamp)
                 .resultList!! as List<PageCache>
         }.toList()
-    }
 
     suspend fun clearBefore(timestamp: Instant) {
-        withContext(Dispatchers.IO) {
-            Database.transaction {
-                createNamedQuery("clearPageCachesBefore")
-                    .setParameter("time", timestamp)
-                    .executeUpdate()
-            }
+        Database.transaction {
+            createNamedQuery("clearPageCachesBefore")
+                .setParameter("time", timestamp)
+                .executeUpdate()
         }
     }
 
