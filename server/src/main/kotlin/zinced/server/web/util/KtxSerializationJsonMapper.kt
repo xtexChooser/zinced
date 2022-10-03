@@ -20,14 +20,22 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.serializer
+import zinced.server.util.Typed
 import java.io.InputStream
 
-class KtxSerializationJsonMapper(private val json: Json = Json {
+private val json: Json = Json {
     ignoreUnknownKeys = true
-}) : JsonMapper {
+}
+
+object KtxSerializationJsonMapper : JsonMapper {
 
     @OptIn(ExperimentalSerializationApi::class)
-    override fun toJsonString(obj: Any) = json.encodeToString(json.serializersModule.serializer(obj.javaClass), obj)
+    override fun toJsonString(obj: Any) =
+        if (obj is Typed<*>) {
+            json.encodeToString(json.serializersModule.serializer(obj.type), obj.value)
+        } else {
+            json.encodeToString(json.serializersModule.serializer(obj::class.java), obj)
+        }
 
     override fun toJsonStream(obj: Any) = toJsonString(obj).byteInputStream()
 

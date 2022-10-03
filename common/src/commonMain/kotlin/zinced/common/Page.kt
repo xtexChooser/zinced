@@ -15,16 +15,30 @@
  */
 @file:Suppress("NOTHING_TO_INLINE")
 
-package zinced.server.mw.model
+package zinced.common
 
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 @JvmInline
 @Serializable
-value class NamespaceID(val id: Int) {
+value class PageID(val id: Int) {
 
     override fun toString() = id.toString()
 
 }
 
-inline fun Number.toNS() = NamespaceID(toInt())
+inline fun Number.toPageID() = PageID(toInt())
+
+@JvmInline
+@Serializable
+value class PageName(val name: String) {
+
+    override fun toString() = name
+
+}
+
+inline fun String.toPageName() = PageName(this)
+inline fun CharSequence.toPageName() = PageName(toString())
+
+fun String.lowercaseFirstChar() = replaceFirstChar { it.lowercaseChar() }

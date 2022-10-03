@@ -19,19 +19,27 @@ import io.javalin.Javalin
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.http.staticfiles.Location
 import io.javalin.http.util.RedirectToLowercasePathPlugin
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import zinced.server.config.Config
+import zinced.server.web.cache.PageCachesEndpointsPlugin
 import zinced.server.web.meta.MetaEndpointsPlugin
 import zinced.server.web.util.KtxSerializationJsonMapper
+import kotlin.coroutines.CoroutineContext
 
-object WebServer {
+object WebServer : CoroutineScope {
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default
 
     val config get() = Config.web
     val javalin = Javalin.create {
-        it.jsonMapper(KtxSerializationJsonMapper())
+        it.jsonMapper(KtxSerializationJsonMapper)
         it.registerPlugin(RouteOverviewPlugin("/api/v1/routes"))
         it.registerPlugin(RedirectToLowercasePathPlugin())
         it.addStaticFiles("zinced/frontend/dist", Location.CLASSPATH)
         it.registerPlugin(MetaEndpointsPlugin)
+        it.registerPlugin(PageCachesEndpointsPlugin)
     }
 
     fun start() {

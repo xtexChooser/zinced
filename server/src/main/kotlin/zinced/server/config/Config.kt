@@ -20,6 +20,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.hocon.Hocon
 import kotlinx.serialization.hocon.decodeFromConfig
+import zinced.server.database.DatabaseConfig
 import zinced.server.web.WebServerConfig
 import zinced.server.mw.MediaWikiConfig
 import java.io.File
@@ -30,5 +31,6 @@ val Config =
 @Serializable
 data class AppConfig(
     val web: WebServerConfig,
-    val mw: MediaWikiConfig,
+    val mediawiki: MediaWikiConfig,
+    val database: DatabaseConfig,
 )

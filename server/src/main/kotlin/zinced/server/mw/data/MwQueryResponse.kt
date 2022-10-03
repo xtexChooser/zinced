@@ -44,9 +44,10 @@ data class MwQueryResponse(
     data class Pages(
         @SerialName("pageid")
         val pageID: Int,
+        val missing: String? = null,
         @SerialName("ns")
-        val namespace: Int,
-        val title: String,
+        val namespace: Int? = null,
+        val title: String? = null,
         @SerialName("displaytitle")
         val displayTitle: String? = null,
         @SerialName("langlinks")

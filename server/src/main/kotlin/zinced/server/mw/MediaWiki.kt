@@ -19,31 +19,34 @@ package zinced.server.mw
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.executeAsync
+import zinced.common.*
 import zinced.server.ZincedServer
 import zinced.server.config.Config
 import zinced.server.mw.data.MwContinue
 import zinced.server.mw.data.MwParseResponse
 import zinced.server.mw.data.MwQueryResponse
 import zinced.server.mw.model.*
-import zinced.server.mw.wikitext.Wikitext
 import zinced.server.util.merge
 
 object MediaWiki {
 
-    val config get() = Config.mw
+    val config get() = Config.mediawiki
 
     val httpClient = OkHttpClient.Builder()
         .build()
     val json = Json { ignoreUnknownKeys = true }
     val lang = config.lang.toLanguage()
+    val logger = KotlinLogging.logger {}
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val apiParallelismLimit = Dispatchers.Default.limitedParallelism(10)
@@ -158,11 +161,23 @@ object MediaWiki {
                         ),
                         continueProvider = MwQueryResponse::`continue`,
                     ).query.pages!!.values
+                        .filter { it.missing == null }
                         .map { PageMetadata.from(it) }
                         .forEach { send(it) }
                 }
             }
         }
+
+    suspend fun queryPageMetadata(lang: LanguageID = MediaWiki.lang, id: PageID) = callApiMerged(
+        lang = lang,
+        action = "query",
+        params = mapOf(
+            "prop" to "info|langlinks|contributors|articlesnippet",
+            "inprop" to "displaytitle",
+            "pageids" to id.id.toString()
+        ),
+        continueProvider = MwQueryResponse::`continue`,
+    ).query.pages!!.values.single().takeIf { it.missing == null }?.let { PageMetadata.from(it) }
 
     suspend fun getPageContent(lang: LanguageID = MediaWiki.lang, id: PageID) =
         PageContent.from(
@@ -188,7 +203,7 @@ object MediaWiki {
                         ),
                         continueProvider = MwQueryResponse::`continue`,
                     ).collect { result ->
-                        putAll(result.query.pages!!.values.associate { it.title.toPageName() to it.pageID.toPageID() })
+                        putAll(result.query.pages!!.values.associate { it.title!!.toPageName() to it.pageID.toPageID() })
                     }
                 }
             }
@@ -216,7 +231,7 @@ object MediaWiki {
                         ),
                         continueProvider = MwQueryResponse::`continue`,
                     ).collect { result ->
-                        putAll(result.query.pages!!.values.associate { it.pageID.toPageID() to it.title.toPageName() })
+                        putAll(result.query.pages!!.values.associate { it.pageID.toPageID() to it.title!!.toPageName() })
                     }
                 }
             }
@@ -230,9 +245,16 @@ object MediaWiki {
             params = mapOf(
                 "pageids" to id.id.toString()
             ),
-        ).query.pages!!.values.single().title.toPageName()
+        ).query.pages!!.values.single().title!!.toPageName()
 
-    suspend fun parsePage(lang: LanguageID = MediaWiki.lang, id: PageID, title: PageName? = null) =
-        Wikitext.parse(title ?: id.toName(), getPageContent(lang, id).wikitext)
+    @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
+    suspend fun walk() {
+        val dispatcher = (currentCoroutineContext()[CoroutineDispatcher] ?: Dispatchers.Default)
+            .limitedParallelism(15)
+        getAllPages().collect { (id, name) ->
+            logger.info("Populating cache for $id")
+            logger.info("Checking $id")
+        }
+    }
 
 }

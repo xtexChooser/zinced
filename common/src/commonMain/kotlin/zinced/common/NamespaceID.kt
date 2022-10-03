@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zinced.server.main
+@file:Suppress("NOTHING_TO_INLINE")
 
-import kotlinx.coroutines.runBlocking
-import zinced.common.toPageName
-import zinced.server.database.Database
-import zinced.server.database.cache.PageCaches
-import zinced.server.mw.model.toID
-import zinced.server.web.WebServer
+package zinced.common
 
-fun main(args: Array<String>) {
-    WebServer.start()
-    Database
+import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
+
+@JvmInline
+@Serializable
+value class NamespaceID(val id: Int) {
+
+    override fun toString() = id.toString()
 
 }
+
+inline fun Number.toNS() = NamespaceID(toInt())

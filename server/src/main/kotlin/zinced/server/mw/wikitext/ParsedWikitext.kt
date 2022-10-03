@@ -2,11 +2,11 @@ package zinced.server.mw.wikitext
 
 import org.sweble.wikitext.parser.nodes.WtParsedWikitextPage
 import org.sweble.wikitext.parser.nodes.WtTemplate
-import zinced.server.mw.model.PageName
-import zinced.server.mw.model.lowercaseFirstChar
+import zinced.common.PageName
+import zinced.common.lowercaseFirstChar
 
 data class ParsedWikitext(
-    val title: PageName,
+    val displayTitle: String,
     val tree: WtParsedWikitextPage
 ) {
 

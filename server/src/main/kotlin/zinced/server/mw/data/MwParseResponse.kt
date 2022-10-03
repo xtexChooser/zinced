@@ -39,9 +39,9 @@ data class MwParseResponse(
         val number: String,
         val index: String,
         @SerialName("fromtitle")
-        val fromTitle: String,
+        val fromTitle: String? = null,
         @SerialName("byteoffset")
-        val byteOffset: Int,
+        val byteOffset: Int? = null,
         val anchor: String,
     )
 

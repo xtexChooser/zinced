@@ -1,10 +1,11 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    kotlin("plugin.noarg")
+    kotlin("plugin.jpa")
     id("application")
 }
 
-//evaluationDependsOn(":common")
 dependencies {
     api(project(":common"))
 
@@ -24,6 +25,11 @@ dependencies {
     // MediaWiki
     implementation("org.sweble.wikitext:swc-parser-lazy:3.1.9")
     //implementation("io.github.java-diff-utils:java-diff-utils:4.12")
+
+    // Database
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    implementation("org.hibernate.orm:hibernate-core:6.1.3.Final")
+    implementation("org.postgresql:postgresql:42.5.0")
 }
 
 application {
@@ -50,4 +56,9 @@ tasks.getByName<Copy>("processResources") {
         into("zinced/frontend/dist")
         exclude("META-INF")
     }
+}
+
+// @TODO: remove after KT 1.7.20
+noArg {
+    annotations("jakarta.persistence.Entity", "jakarta.persistence.Embeddable", "jakarta.persistence.MappedSuperclass")
 }

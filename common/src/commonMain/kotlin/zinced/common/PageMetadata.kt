@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("NOTHING_TO_INLINE")
-
-package zinced.server.mw.model
+package zinced.common
 
 import kotlinx.serialization.Serializable
 
-@JvmInline
 @Serializable
-value class LanguageID(val id: String) {
-
-    override fun toString() = id
-
-}
-
-inline fun String.toLanguage() = LanguageID(this)
-inline fun CharSequence.toLanguage() = LanguageID(toString())
+data class PageMetadata(
+    val id: PageID,
+    val title: PageName,
+    val ns: NamespaceID,
+    val displayTitle: String,
+    val lang: Map<LanguageID, PageName>,
+    val anonymousContributors: Int,
+    val contributors: Set<Int>,
+    val categories: Set<Pair<NamespaceID, PageName>>,
+    val templates: Set<Pair<NamespaceID, PageName>>,
+    val summary: String,
+)

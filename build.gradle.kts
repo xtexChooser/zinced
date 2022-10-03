@@ -12,6 +12,7 @@ plugins {
     kotlin("multiplatform") version "1.7.10" apply false
     kotlin("jvm") version "1.7.10" apply false
     kotlin("plugin.serialization") version "1.7.10" apply false
+    kotlin("plugin.noarg") version "1.7.10" apply false
     id("org.jetbrains.compose") version "1.2.0-beta02-dev798" apply false
     id("net.kyori.indra.licenser.spotless") version "2.2.0"
     id("net.kyori.indra.git") version "2.2.0"
@@ -26,6 +27,8 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven("https://oss.sonatype.org/content/repositories/snapshots/")
+        maven("https://repository.jboss.org/nexus/content/repositories/public/")
     }
 
     afterEvaluate {

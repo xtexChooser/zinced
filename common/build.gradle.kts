@@ -19,6 +19,7 @@ kotlin {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 api("org.jetbrains.kotlinx:atomicfu:0.18.3")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             }
         }
         val jvmMain by getting {

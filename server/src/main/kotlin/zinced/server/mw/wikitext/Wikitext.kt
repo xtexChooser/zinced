@@ -9,8 +9,6 @@ import org.sweble.wikitext.parser.nodes.WtPreproWikitextPage
 import org.sweble.wikitext.parser.parser.PreprocessorToParserTransformer
 import org.sweble.wikitext.parser.utils.WtAstPrinter
 import org.sweble.wikitext.parser.utils.WtPrettyPrinter
-import zinced.server.mw.model.PageName
-import zinced.server.mw.model.toPageName
 
 object Wikitext {
 
@@ -28,7 +26,7 @@ object Wikitext {
         return newParser().parseArticle(preprocessed, title) as WtParsedWikitextPage
     }
 
-    fun parse(title: PageName, source: String) =
-        ParsedWikitext(title = title, tree = parseAST(title.name, source))
+    fun parse(displayTitle: String, source: String) =
+        ParsedWikitext(displayTitle = displayTitle, tree = parseAST(displayTitle, source))
 
 }

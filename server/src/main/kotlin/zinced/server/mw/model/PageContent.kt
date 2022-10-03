@@ -1,6 +1,7 @@
 package zinced.server.mw.model
 
 import kotlinx.serialization.Serializable
+import zinced.common.*
 import zinced.server.mw.data.MwParseResponse
 
 @Serializable
@@ -30,7 +31,7 @@ data class PageContent(
             exists = entry.exists != null,
         )
 
-        fun from(entries: Collection<MwParseResponse.SectionsEntry>) = from(entries.toList().listIterator())
+        fun from(entries: Collection<MwParseResponse.SectionsEntry>) = Companion.from(entries.toList().listIterator())
 
         fun from(entries: ListIterator<MwParseResponse.SectionsEntry>): List<Section> {
             val sections = mutableListOf<Section>()
@@ -49,11 +50,11 @@ data class PageContent(
                 sections.add(
                     Section(
                         headerLevel = parent.level.toInt(),
-                        index = parent.index.toInt(),
+                        index = parent.index.toIntOrNull() ?: 0,
                         text = parent.line,
                         prefix = parent.number,
                         anchor = parent.anchor,
-                        child = if(child.isEmpty()) emptyList() else from(child.listIterator())
+                        child = if (child.isEmpty()) emptyList() else from(child.listIterator())
                     )
                 )
             }

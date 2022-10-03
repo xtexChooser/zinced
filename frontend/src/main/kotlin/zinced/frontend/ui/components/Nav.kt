@@ -28,6 +28,7 @@ fun Nav(links: Map<String, String>) {
 fun SiteNav() = Nav(
     mapOf(
         "问题" to "/issues",
+        "页面缓存" to "/page_caches",
         "关于" to "/about",
     )
 )

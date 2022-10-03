@@ -77,4 +77,9 @@ object Styles : StyleSheet() {
         fontWeight("bold")
     }
 
+    val center by style {
+        alignContent(AlignContent.Center)
+        textAlign("center")
+    }
+
 }
